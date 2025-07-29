@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Boot Performance Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        h2 {
+            color: #3498db;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin: 10px;
+            padding: 20px;
+            width: calc(33.333% - 20px);
+            box-sizing: border-box;
+        }
+        @media (max-width: 768px) {
+            .card {
+                width: calc(50% - 20px);
+            }
+        }
+        @media (max-width: 480px) {
+            .card {
+                width: 100%;
+            }
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .card p {
+            color: #7f8c8d;
+        }
+        .card .price {
+            font-weight: bold;
+            color: #27ae60;
+            font-size: 1.2em;
+        }
+        .card .category {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        #products {
+            margin-top: 20px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Démo de Performance Spring Boot</h1>
+        <p>Démonstration de diverses techniques d'optimisation des performances</p>
+    </header>
+
+    <div class="controls">
+        <h2>Catégories de Produits</h2>
+        <button onclick="loadProducts('all')">Tous les Produits</button>
+        <button onclick="loadProducts('Electronics')">Électronique</button>
+        <button onclick="loadProducts('Books')">Livres</button>
+        <button onclick="loadProducts('Clothing')">Vêtements</button>
+        <button onclick="loadProducts('Home')">Maison</button>
+        <button onclick="loadProducts('Sports')">Sports</button>
+    </div>
+
+    <div id="products" class="container">
+        <!-- Les produits seront chargés ici -->
+        <div class="card">
+            <h3>Chargement des produits...</h3>
+            <p>Veuillez patienter pendant que nous récupérons les produits.</p>
+        </div>
+    </div>
+
+    <script>
+        // Charger les produits lorsque la page se charge
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts('all');
+        });
+
+        // Fonction pour charger les produits par catégorie
+        function loadProducts(category) {
+            const productsContainer = document.getElementById('products');
+            productsContainer.innerHTML = '<div class="card"><h3>Chargement des produits...</h3><p>Veuillez patienter pendant que nous récupérons les produits.</p></div>';
+
+            let url = '/api/products';
+            if (category !== 'all') {
+                url = `/api/products/category/${category}`;
+            }
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(products => {
+                    productsContainer.innerHTML = '';
+
+                    if (products.length === 0) {
+                        productsContainer.innerHTML = '<div class="card"><h3>Aucun produit trouvé</h3><p>Aucun produit n\'a été trouvé dans cette catégorie.</p></div>';
+                        return;
+                    }
+
+                    products.forEach(product => {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+
+                        card.innerHTML = `
+                            <span class="category">${product.category}</span>
+                            <h3>${product.name}</h3>
+                            <p>${product.description || 'Aucune description disponible'}</p>
+                            <div class="price">$${product.price.toFixed(2)}</div>
+                        `;
+
+                        productsContainer.appendChild(card);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching products:', error);
+                    productsContainer.innerHTML = `
+                        <div class="card">
+                            <h3>Error loading products</h3>
+                            <p>There was an error loading the products. Please try again later.</p>
+                            <p>Error: ${error.message}</p>
+                        </div>
+                    `;
+                });
+        }
+    </script>
+</body>
+</html>
