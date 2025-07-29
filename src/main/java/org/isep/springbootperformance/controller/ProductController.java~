@@ -154,7 +154,7 @@ public class ProductController {
     }
 
     /**
-     * Clear product cache (admin operation).
+     * Vide le cache des produits (opération d'administration).
      */
     @PostMapping("/cache/clear")
     public ResponseEntity<Void> clearProductCache() {
